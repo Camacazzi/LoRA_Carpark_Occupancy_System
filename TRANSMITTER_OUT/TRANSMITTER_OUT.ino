@@ -168,7 +168,7 @@ void loop() {
     carout++;
     //Set type to 1 for data transmission
     type = 1;
-    count = 0;
+    count = 0;git p
     delaycount = 0;
     os_setCallback(&txjob, tx_func);
     Serial.print("Car has exited, car:");

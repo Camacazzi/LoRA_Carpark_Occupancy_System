@@ -24,7 +24,7 @@ long duration, cm, inches;
 int count = 0;
 int carin = 0;
 int type = 0;
-char carintransmit[32];
+char transmit[32];
 int delaycount = 0;
 
 // Pin mapping
@@ -67,14 +67,15 @@ static void tx_func(osjob_t* job) {
   //Two transmission types, 0 for sync packet, 1 for data packet.
   //New car has entered!
   if(type){
-    snprintf(carintransmit, sizeof(carintransmit), "IN\\%i", carin);
+    snprintf(transmit, sizeof(transmit), "IN\\%i", carin);
     printf("Transmitting packet: %s", carintransmit);
-    tx(carintransmit, txdone_func);
+    tx(transmit, txdone_func);
   }
   else{
     //Send sync packet
     printf("Sending sync packet");
-    tx("SYNC//IN", txdone_func);
+    snprintf(transmit, sizeof(transmit), "SYNC//IN//%i", carin);
+    tx(transmit, txdone_func);
   }
 }
 
