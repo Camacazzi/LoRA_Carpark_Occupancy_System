@@ -21,8 +21,9 @@
 #endif
 
 #define TX_INTERVAL 4000 
-#define NODE_TYPE 1
-
+//#define NODE_TYPE 1
+#define CAR_TRIGGER_DURATION 12
+#define SYNC_DURATION 40
 
  
 int trigPin = 3;    // Trigger
@@ -230,7 +231,7 @@ void loop() {
     count--;
   }
   //An object has sat infront of the sensor for long enough, consider it to be a car
-  if(count >=3){
+  if(count >=CAR_TRIGGER_DURATION){
     carin++;
     //Set type to 1 for data transmission
     type = 1;
@@ -249,7 +250,7 @@ void loop() {
   if(!type){
     delaycount++;
   }
-  if(delaycount >= 4){
+  if(delaycount >= SYNC_DURATION){
     type = 0;
     delaycount = 0;
     os_setCallback(&txjob, tx_func);
