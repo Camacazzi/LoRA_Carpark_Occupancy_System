@@ -1,13 +1,5 @@
-   /*
- * created by Rui Santos, https://randomnerdtutorials.com
- * 
- * Complete Guide for Ultrasonic Sensor HC-SR04
- *
-    Ultrasonic sensor Pins:
-        VCC: +5VDC
-        Trig : Trigger (INPUT) - Pin11
-        Echo: Echo (OUTPUT) - Pin 12
-        GND: GND
+ /*
+ * Ultrasonic reading code created by Rui Santos, https://randomnerdtutorials.com
  */
 
 #include <lmic.h>
@@ -48,8 +40,6 @@ void os_getDevEui (u1_t* buf) { }
 void os_getDevKey (u1_t* buf) { }
 
 void onEvent (ev_t ev) {
-  /*I FEEL AS IF I SHOULD HAVE SOMETHING HERE, IN ONE OF THE ORIGINAL EXAMPLES PLACING A FUNCTION HERE TO WAIT FOR AN ACK SEEMED 
-    TO WORK*/
 }
 
 osjob_t txjob;
@@ -67,54 +57,6 @@ void tx(const char *str, osjobcb_t func) {
   os_radio(RADIO_TX);
   Serial.println("TX");
 }
-
-/*
-// Enable rx mode and call func when a packet is received
-void rx(osjobcb_t func) {
-  LMIC.osjob.func = func;
-  LMIC.rxtime = os_getTime(); // RX _now_
-  // Enable "continuous" RX (e.g. without a timeout, still stops after
-  // receiving a packet)
-  os_radio(RADIO_RXON);
-  Serial.println("RX");
-}*/
-
-/*
-static void rxtimeout_func(osjob_t *job) {
-  digitalWrite(LED_BUILTIN, LOW); // off
-}*/
-
-/*static void rx_func (osjob_t* job) {
-  // Blink once to confirm reception and then keep the led on
-  digitalWrite(LED_BUILTIN, LOW); // off
-  delay(10);
-  digitalWrite(LED_BUILTIN, HIGH); // on
-
-  // Timeout RX (i.e. update led status) after 3 periods without RX
-  os_setTimedCallback(&timeoutjob, os_getTime() + ms2osticks(3*TX_INTERVAL), rxtimeout_func);
-
-  // Reschedule TX so that it should not collide with the other side's
-  // next TX
-  os_setTimedCallback(&txjob, os_getTime() + ms2osticks(TX_INTERVAL/2),);
-
-  Serial.print("Got ");
-  Serial.print(LMIC.dataLen);
-  Serial.println(" bytes");
-  Serial.write(LMIC.frame, LMIC.dataLen);
-  Serial.println();
-  Serial.print("DR=");
-  Serial.println(LMIC.datarate); //see region specs eg 2=SF7, 3=SF9
-  Serial.print("txpow=");
-  Serial.println(LMIC.txpow); //dbM
-  Serial.print("rssi=");
-  Serial.println(LMIC.rssi);  //dbM ?
-  Serial.print("snr=");
-  Serial.println(LMIC.snr);
-  Serial.println();
-
-  // Restart RX
-  rx(rx_func);
-}*/
 
 static void txdone_func (osjob_t* job) {
   //rx(rx_func);
@@ -134,10 +76,6 @@ static void tx_func(osjob_t* job) {
     printf("Sending sync packet");
     tx("SYNC//IN", txdone_func);
   }
-  // reschedule job every TX_INTERVAL (plus a bit of random to prevent
-  // systematic collisions), unless packets are received, then rx_func
-  // will reschedule at half this time.
-  //os_setTimedCallback(job, os_getTime() + ms2osticks(TX_INTERVAL + random(500)), tx_func);
 }
 
  
@@ -212,12 +150,7 @@ void loop() {
  
   // Convert the time into a distance
   cm = (duration/2) / 29.1;     // Divide by 29.1 or multiply by 0.0343
-  // inches = (duration/2) / 74;   // Divide by 74 or multiply by 0.0135
-
-
   
-  //Serial.print(inches);
-  //Serial.print("in, ");
   Serial.print(cm);
   Serial.print("cm");
   Serial.println();
