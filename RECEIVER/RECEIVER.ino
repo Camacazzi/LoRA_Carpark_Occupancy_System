@@ -95,10 +95,14 @@ static void rx_func (osjob_t* job) {
     //SYNC PACKET RECEIVED, NOW DETERMINE IF FROM IN OR OUT
     if(strncmp(current_receive, "SYNC//IN", 8) == 0){
       //in sync packet
+      memcpy(&carin_buffer[0], &current_receive[10], LMIC.dataLen * sizeof(char));
+      carin = atoi(carin_buffer);
       sync_in_counter = 0;
     }
     else{
       //OUT SYNC PACKET
+      memcpy(&carout_buffer[0], &current_receive[11], LMIC.dataLen * sizeof(char));
+      carout = atoi(carout_buffer);
       sync_out_counter = 0;
     }
   }
@@ -107,15 +111,12 @@ static void rx_func (osjob_t* job) {
     memcpy(&carin_buffer[0], &current_receive[3], LMIC.dataLen * sizeof(char));
     carin = atoi(carin_buffer);
     sync_in_counter = 0;    
-    //printf("carin = %i\n", carin);
   }
   else if(strncmp(current_receive, "OUT", 3) == 0){
     //CAR HAS LEFT
     memcpy(&carout_buffer[0], &current_receive[4], LMIC.dataLen * sizeof(char));
-    //printf("car out buffer = %s\n",carout_buffer);
     carout = atoi(carout_buffer);
     sync_out_counter = 0;
-    //printf("carout = %i\n", carout);
   }
   //do calculations
   car_count = carin-carout;
