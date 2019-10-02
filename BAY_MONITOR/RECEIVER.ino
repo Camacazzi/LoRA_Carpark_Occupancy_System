@@ -49,18 +49,12 @@ osjob_t timeoutjob;
 static void tx_func (osjob_t* job);
 
 char current_receive[255];
-int carin;
+int car old = 0;
+int carpresent;
 //char carin_buffer = "00000000";
 char carin_buffer[128];
-int carout;
-//char carout_buffer = "00000000";
-char carout_buffer[128];
-int car_count;
-int capacity;
-int free_spaces;
 
-int sync_in_counter = 0;
-int sync_out_counter = 0;
+int sync_bay_counter = 0;
 
 // Enable rx mode and call func when a packet is received
 void rx(osjobcb_t func) {
@@ -92,37 +86,23 @@ static void rx_func (osjob_t* job) {
   Serial.println();
   snprintf(current_receive, LMIC.dataLen+1, "%s", LMIC.frame);
   if(strncmp(current_receive, "SYNC", 4) == 0){
-    //SYNC PACKET RECEIVED, NOW DETERMINE IF FROM IN OR OUT
-    if(strncmp(current_receive, "SYNC//IN", 8) == 0){
-      //in sync packet
-      memcpy(&carin_buffer[0], &current_receive[10], LMIC.dataLen * sizeof(char));
-      carin = atoi(carin_buffer);
-      sync_in_counter = 0;
-    }
-    else{
-      //OUT SYNC PACKET
-      memcpy(&carout_buffer[0], &current_receive[11], LMIC.dataLen * sizeof(char));
-      carout = atoi(carout_buffer);
-      sync_out_counter = 0;
-    }
+    //SYNC PACKET RECEIVED, CAN ASSUME POSITION HASNT CHANGED
+    memcpy(&carin_buffer[0], &current_receive[14], LMIC.dataLen * sizeof(char));
+    carpresent = atoi(carin_buffer);
+    sync_bay_counter = 0;
   }
-  else if(strncmp(current_receive, "IN", 2) == 0){
-    //CAR HAS COME IN
-    memcpy(&carin_buffer[0], &current_receive[3], LMIC.dataLen * sizeof(char));
-    carin = atoi(carin_buffer);
-    sync_in_counter = 0;    
+  else if(strncmp(current_receive, "BAY", 3) == 0){
+    //LOOK TO SEE IF CAR HAS LEFT OR ENTERED
+    memcpy(&carin_buffer[0], &current_receive[7], LMIC.dataLen * sizeof(char));
+    carpresent = atoi(carin_buffer);
+    sync_bay_counter = 0;    
+    
+    
+    //TODO SET UP OUTPUT TO TELL PI NEW BAY STATUS
+
+
   }
-  else if(strncmp(current_receive, "OUT", 3) == 0){
-    //CAR HAS LEFT
-    memcpy(&carout_buffer[0], &current_receive[4], LMIC.dataLen * sizeof(char));
-    carout = atoi(carout_buffer);
-    sync_out_counter = 0;
-  }
-  //do calculations
-  car_count = carin-carout;
-  free_spaces = car_count-capacity;
   
-  //printf("free spaces = %i\n", free_spaces);
   //TODO: write to raspberry pi current free occupancy
   Serial.println();
   Serial.print("DR=");
@@ -199,12 +179,8 @@ void setup() {
 void loop() {
   // execute scheduled jobs and events
   os_runloop_once();
-  sync_in_counter++;
-  sync_out_counter++;
-  if(sync_in_counter >= 10){
+  sync_bay_counter++;
+  if(sync_bay_counter >= 10){
     //TODO: IN NODE HAS BEEN LOST
-  }
-  if(sync_out_counter >= 10){
-    //TODO: OUT NODE HAS BEEN LOST
   }
 }
